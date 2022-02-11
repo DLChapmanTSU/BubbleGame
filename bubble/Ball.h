@@ -11,4 +11,8 @@ public:
     Ball(sf::Vector2f p, sf::Vector2f v, sf::Color c, bool a);
     void Update();
     void Render(sf::RenderWindow& w);
+    bool GetIsActive();
+    void SetVelocity(float x, float y);
+    void SetIsActive(bool a);
+    void SetPosition(float x, float y);
 };

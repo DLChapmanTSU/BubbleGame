@@ -15,6 +15,11 @@
 #define WINDOW_H  600
 #define WINDOW_W  1200
 
+struct PlayerData{
+    size_t m_nextBallIndex { 0 };
+    int points { 0 };
+};
+
 int main(int argc, const char *argv[])
 {
     srand(time(NULL));
@@ -29,13 +34,16 @@ int main(int argc, const char *argv[])
         sf::Color(127, 192, 192),
     };
 
+    PlayerData playerOne;
+    PlayerData playerTwo;
+
     std::vector<Ball> bubbles;
     for (size_t i = 1; i < 11; i++) {
         for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
-            sf::CircleShape bubble(BUBBLE_SIZE);
-            bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+            //sf::CircleShape bubble(BUBBLE_SIZE);
+            //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
             int points = rand() % 5;
-            bubble.setFillColor(colours[points]);
+            //bubble.setFillColor(colours[points]);
             bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true));
         }
     }
@@ -65,6 +73,15 @@ int main(int argc, const char *argv[])
     float dx1{ 0 };
     float dy1{ 0 };
 
+    std::vector<Ball> playerOneBalls;
+    std::vector<Ball> playerTwoBalls;
+
+    for (size_t i = 0; i < 25; i++){
+        int points = rand() % 5;
+        playerOneBalls.push_back(Ball(sf::Vector2f(p1_pos.x, p1_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
+        playerTwoBalls.push_back(Ball(sf::Vector2f(p2_pos.x, p2_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
+    }
+
     sf::CircleShape ball2(BUBBLE_SIZE);
     ball2.setOrigin(BUBBLE_SIZE, BUBBLE_SIZE);
     ball2.setPosition(p2_pos);
@@ -93,6 +110,8 @@ int main(int argc, const char *argv[])
             }
         }
 
+        playerOneBalls[playerOne.m_nextBallIndex].SetIsActive(true);
+
         angle1 = cannon1.getRotation();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1))
             cannon1.rotate(-1);
@@ -107,17 +126,39 @@ int main(int argc, const char *argv[])
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon1Ready)
         {
             angle1 = cannon1.getRotation();
-            dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-            dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-            isCannon1Ready = false;
+            float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+            float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+            playerOneBalls[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
+            playerOneBalls[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
+            //isCannon1Ready = false;
+            playerOne.m_nextBallIndex++;
+            if (playerOne.m_nextBallIndex >= playerOneBalls.size()){
+                playerOne.m_nextBallIndex = 0;
+            }
+            //angle1 = cannon1.getRotation();
+            //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+            //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+            //isCannon1Ready = false;
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && isCannon2Ready)
         {
-            angle2 = cannon2.getRotation();
-            dx2 = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
-            dy2 = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
-            isCannon2Ready = false;
+            for (size_t i = 0; i < playerTwoBalls.size(); i++){
+                if (playerTwoBalls[i].GetIsActive() == false){
+                    angle2 = cannon2.getRotation();
+                    float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
+                    float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
+                    playerTwoBalls[i].SetIsActive(true);
+                    playerTwoBalls[i].SetPosition(p2_pos.x, p2_pos.y);
+                    playerTwoBalls[i].SetVelocity(startX, startY);
+                    //isCannon2Ready = false;
+                    break;
+                }
+            }
+            //angle2 = cannon2.getRotation();
+            //dx2 = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
+            //dy2 = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
+            //isCannon2Ready = false;
         }
 
         if (dx1 != 0 && dy1 != 0)
@@ -138,15 +179,23 @@ int main(int argc, const char *argv[])
             }
         }
 
+        for (size_t i = 0; i < playerOneBalls.size(); i++){
+            playerOneBalls[i].Update();
+        }
+
         window.clear();
         window.draw(cannon1);
         window.draw(cannon2);
         window.draw(wall);
         window.draw(score);
-        window.draw(ball1);
+        //window.draw(ball1);
         window.draw(ball2);
         for (Ball& b : bubbles) {
             b.Render(window);
+        }
+
+        for (size_t i = 0; i < playerOneBalls.size(); i++){
+            playerOneBalls[i].Render(window);
         }
         window.display();
     }
