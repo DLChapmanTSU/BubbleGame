@@ -15,10 +15,11 @@
 #define VELOCITY  7
 #define WINDOW_H  600
 #define WINDOW_W  1200
+#define M_PI 3.14159265359f
 
 struct PlayerData {
     size_t m_nextBallIndex{ 0 };
-    int points{ 0 };
+    int m_points{ 0 };
     std::chrono::steady_clock::time_point m_lastShot;
 };
 
@@ -44,9 +45,9 @@ int main(int argc, const char* argv[])
     playerTwo.m_lastShot = std::chrono::steady_clock::now();
 
     std::vector<Ball> bubbles;
-    for (size_t i = 0; i < 50; i++){
+    for (size_t i = 0; i < 50; i++) {
         int points = rand() % 5;
-        bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, false));
+        bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
     }
 
     for (size_t i = 1; i < 11; i++) {
@@ -55,7 +56,7 @@ int main(int argc, const char* argv[])
             //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
             int points = rand() % 5;
             //bubble.setFillColor(colours[points]);
-            bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true));
+            bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
         }
     }
 
@@ -89,8 +90,8 @@ int main(int argc, const char* argv[])
 
     for (size_t i = 0; i < 25; i++) {
         int points = rand() % 5;
-    //    playerOneBalls.push_back(Ball(sf::Vector2f(p1_pos.x, p1_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
-        playerTwoBalls.push_back(Ball(sf::Vector2f(p2_pos.x, p2_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
+        //    playerOneBalls.push_back(Ball(sf::Vector2f(p1_pos.x, p1_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
+        playerTwoBalls.push_back(Ball(sf::Vector2f(p2_pos.x, p2_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], i, false));
     }
 
     sf::CircleShape ball2(BUBBLE_SIZE);
@@ -111,7 +112,7 @@ int main(int argc, const char* argv[])
     int score1 = 0;
     int score2 = 0;
 
-    
+
 
     while (window.isOpen())
     {
@@ -126,6 +127,8 @@ int main(int argc, const char* argv[])
         bubbles[playerOne.m_nextBallIndex].SetIsActive(true);
         //std::cout << bubbles[playerOne.m_nextBallIndex].GetIsActive() << std::endl;
         bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
+        bubbles[playerOne.m_nextBallIndex].SetIsInWall(false);
+        bubbles[playerOne.m_nextBallIndex].SetIsPlayerOneBall(true);
 
         std::chrono::steady_clock::time_point current = std::chrono::steady_clock::now();
         float p1Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerOne.m_lastShot).count();
@@ -165,6 +168,8 @@ int main(int argc, const char* argv[])
             bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
             //isCannon1Ready = false;
             playerOne.m_nextBallIndex = FindNextBall(bubbles);
+            sf::Color c = colours[std::rand() % 5];
+            bubbles[playerOne.m_nextBallIndex].SetColor(c);
             //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
             //    playerOne.m_nextBallIndex = 0;
             //}
@@ -220,11 +225,18 @@ int main(int argc, const char* argv[])
 
         for (size_t i = 0; i < bubbles.size(); i++)
         {
-            if (bubbles[i].GetIsActive() == true && bubbles[i].GetIsInWall() == false){
+            if (bubbles[i].GetIsActive() == false) {
+                continue;
+            }
+
+            if (bubbles[i].GetIsActive() == true && bubbles[i].GetIsInWall() == false) {
                 bool hit = bubbles[i].CheckCollision(bubbles);
+                if (hit == true){
+                    playerOne.m_points += bubbles[i].WallCombo(bubbles);
+                }
             }
         }
-        
+
 
         //for (size_t i = 0; i < playerOneBalls.size(); i++) {
         //    if (playerOneBalls[i].GetIsActive() == true) {
@@ -238,6 +250,8 @@ int main(int argc, const char* argv[])
         //        }
         //    }
         //}
+
+        score.setString(std::to_string(playerOne.m_points) + " " + std::to_string(playerTwo.m_points));
 
         window.clear();
         window.draw(cannon1);
@@ -258,13 +272,13 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-size_t FindNextBall(std::vector<Ball>& b){
+size_t FindNextBall(std::vector<Ball>& b) {
     for (size_t i = 0; i < b.size(); i++)
     {
-        if (b[i].GetIsActive() == false && b[i].GetIsInWall() == false){
+        if (b[i].GetIsActive() == false && b[i].GetIsInWall() == false) {
             return i;
         }
     }
-    
+
     return 0;
 }
