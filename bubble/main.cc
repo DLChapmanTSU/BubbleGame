@@ -23,7 +23,7 @@ struct PlayerData {
     std::chrono::steady_clock::time_point m_lastShot;
 };
 
-size_t FindNextBall(std::vector<Ball>& b);
+size_t FindNextBall(std::vector<Ball>& b, bool p);
 
 int main(int argc, const char* argv[])
 {
@@ -43,11 +43,19 @@ int main(int argc, const char* argv[])
     PlayerData playerTwo;
     playerOne.m_lastShot = std::chrono::steady_clock::now();
     playerTwo.m_lastShot = std::chrono::steady_clock::now();
+    playerOne.m_nextBallIndex = 0;
+    playerTwo.m_nextBallIndex = 1;
 
     std::vector<Ball> bubbles;
     for (size_t i = 0; i < 50; i++) {
         int points = rand() % 5;
         bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
+        if (i % 2 == 0){
+            bubbles[i].SetIsPlayerOneBall(true);
+        }
+        else{
+            bubbles[i].SetIsPlayerOneBall(false);
+        }
     }
 
     for (size_t i = 1; i < 11; i++) {
@@ -86,13 +94,13 @@ int main(int argc, const char* argv[])
     float dy1{ 0 };
 
     //std::vector<Ball> playerOneBalls;
-    std::vector<Ball> playerTwoBalls;
+    //std::vector<Ball> playerTwoBalls;
 
-    for (size_t i = 0; i < 25; i++) {
-        int points = rand() % 5;
+    //for (size_t i = 0; i < 25; i++) {
+    //    int points = rand() % 5;
         //    playerOneBalls.push_back(Ball(sf::Vector2f(p1_pos.x, p1_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], false));
-        playerTwoBalls.push_back(Ball(sf::Vector2f(p2_pos.x, p2_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], i, false));
-    }
+    //    playerTwoBalls.push_back(Ball(sf::Vector2f(p2_pos.x, p2_pos.y), sf::Vector2f(0.0f, 0.0f), colours[points], i, false));
+    //}
 
     sf::CircleShape ball2(BUBBLE_SIZE);
     ball2.setOrigin(BUBBLE_SIZE, BUBBLE_SIZE);
@@ -129,6 +137,11 @@ int main(int argc, const char* argv[])
         bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
         bubbles[playerOne.m_nextBallIndex].SetIsInWall(false);
         bubbles[playerOne.m_nextBallIndex].SetIsPlayerOneBall(true);
+
+        bubbles[playerTwo.m_nextBallIndex].SetIsActive(true);
+        bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
+        bubbles[playerTwo.m_nextBallIndex].SetIsInWall(false);
+        bubbles[playerTwo.m_nextBallIndex].SetIsPlayerOneBall(false);
 
         std::chrono::steady_clock::time_point current = std::chrono::steady_clock::now();
         float p1Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerOne.m_lastShot).count();
@@ -167,7 +180,7 @@ int main(int argc, const char* argv[])
             bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
             bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
             //isCannon1Ready = false;
-            playerOne.m_nextBallIndex = FindNextBall(bubbles);
+            playerOne.m_nextBallIndex = FindNextBall(bubbles, true);
             sf::Color c = colours[std::rand() % 5];
             bubbles[playerOne.m_nextBallIndex].SetColor(c);
             //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
@@ -182,24 +195,24 @@ int main(int argc, const char* argv[])
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && isCannon2Ready)
         {
-            for (size_t i = 0; i < playerTwoBalls.size(); i++) {
-                if (playerTwoBalls[i].GetIsActive() == false) {
-                    angle2 = cannon2.getRotation();
-                    float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
-                    float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
-                    playerTwoBalls[i].SetIsActive(true);
-                    playerTwoBalls[i].SetPosition(p2_pos.x, p2_pos.y);
-                    playerTwoBalls[i].SetVelocity(startX, startY);
-                    //isCannon2Ready = false;
-                    break;
-                }
-            }
-
+            angle2 = cannon2.getRotation();
+            float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
+            float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
+            bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
+            bubbles[playerTwo.m_nextBallIndex].SetVelocity(startX, startY);
+            std::cout << "Player two shot ball number " << playerTwo.m_nextBallIndex << std::endl;
+            //isCannon1Ready = false;
+            playerTwo.m_nextBallIndex = FindNextBall(bubbles, false);
+            sf::Color c = colours[std::rand() % 5];
+            bubbles[playerTwo.m_nextBallIndex].SetColor(c);
+            //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
+            //    playerOne.m_nextBallIndex = 0;
+            //}
+            //angle1 = cannon1.getRotation();
+            //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+            //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+            //isCannon1Ready = false;
             playerTwo.m_lastShot = std::chrono::steady_clock::now();
-            //angle2 = cannon2.getRotation();
-            //dx2 = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
-            //dy2 = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
-            //isCannon2Ready = false;
         }
 
         /*if (dx1 != 0 && dy1 != 0)
@@ -259,7 +272,7 @@ int main(int argc, const char* argv[])
         window.draw(wall);
         window.draw(score);
         //window.draw(ball1);
-        window.draw(ball2);
+        //window.draw(ball2);
         for (Ball& b : bubbles) {
             b.Render(window);
         }
@@ -272,10 +285,10 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-size_t FindNextBall(std::vector<Ball>& b) {
+size_t FindNextBall(std::vector<Ball>& b, bool p) {
     for (size_t i = 0; i < b.size(); i++)
     {
-        if (b[i].GetIsActive() == false && b[i].GetIsInWall() == false) {
+        if (b[i].GetIsActive() == false && b[i].GetIsInWall() == false && b[i].GetIsPlayerOneBall() == p) {
             return i;
         }
     }

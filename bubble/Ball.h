@@ -19,6 +19,7 @@ public:
     sf::Color& GetColor();
     bool GetIsInWall();
     size_t GetID();
+    bool GetIsPlayerOneBall();
     void SetVelocity(float x, float y);
     void SetIsActive(bool a);
     void SetPosition(float x, float y);

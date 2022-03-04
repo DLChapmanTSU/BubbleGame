@@ -55,6 +55,10 @@ size_t Ball::GetID()
     return m_id;
 }
 
+bool Ball::GetIsPlayerOneBall(){
+    return m_isPlayerOneBall;
+}
+
 void Ball::SetVelocity(float x, float y) {
     m_velocity = sf::Vector2f(x, y);
 }
@@ -87,6 +91,11 @@ bool Ball::CheckCollision(std::vector<Ball>& b)
 
     if (m_isPlayerOneBall == true){
         if (m_position.x <= 40.0f || m_position.x >= 560.0f){
+            m_velocity.x = -m_velocity.x;
+        }
+    }
+    else{
+        if (m_position.x <= 640.0f || m_position.x >= 1160.0f){
             m_velocity.x = -m_velocity.x;
         }
     }
