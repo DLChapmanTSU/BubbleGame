@@ -6,6 +6,10 @@
 #include <chrono>
 
 #include "Ball.h"
+#include "List.h"
+#include "Queue.h"
+#include "Reciever.h"
+#include "Accepter.h"
 
 #define BUBBLE_SIZE 20
 #define CANNON_H  60
