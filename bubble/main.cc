@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <chrono>
+#include <thread>
 
 #include "Ball.h"
 #include "List.h"
@@ -21,16 +22,107 @@
 #define WINDOW_W  1200
 #define M_PI 3.14159265359f
 
+enum class UserInput{
+    E_SHOOT_PRESSED,
+    E_SHOOT_RELEASED,
+    E_LEFT_PRESSED,
+    E_LEFT_RELEASED,
+    E_RIGHT_PRESSED,
+    E_RIGHT_RELEASED
+};
+
 struct PlayerData {
     size_t m_nextBallIndex{ 0 };
     int m_points{ 0 };
     std::chrono::steady_clock::time_point m_lastShot;
 };
 
+struct ClientData{
+    std::string c_name;
+    int c_points;
+    u_int8_t c_input;
+    std::string c_message;
+};
+
+sf::Packet& operator >>(sf::Packet& packet, ClientData& player)
+{
+    return packet >> player.c_name >> player.c_points >> player.c_input >> player.c_message;
+}
+
+sf::Packet& operator <<(sf::Packet& packet, ClientData& player)
+{
+    return packet << player.c_name << player.c_points << player.c_input << player.c_message;
+}
+
 size_t FindNextBall(std::vector<Ball>& b, bool p);
 
 int main(int argc, const char* argv[])
 {
+    std::cout << "I am a client" << std::endl;
+    sf::TcpSocket socket;
+    //socket.connect("152.105.67.137", 55561);
+    Queue<std::string> queue;
+    List<std::shared_ptr<sf::TcpSocket>> sockets;
+    std::thread(Accepter(sockets, queue)).detach();
+    //std::thread(Accepter(sockets, queue)).detach();
+    //Setup a listener
+    //sf::CircleShape c(4);
+    
+    //c.getLocalBounds();
+
+    sf::UdpSocket udpSocket;
+    sf::UdpSocket udpRecieverSocket;
+
+    if (udpRecieverSocket.bind(55572) != sf::Socket::Done){
+        std::cout << "Failed to bind UDP Socket" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Listener Bound" << std::endl;
+    }
+
+    if (udpSocket.bind(55570) != sf::Socket::Done){
+        std::cout << "Failed to bind UDP Socket" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Bound" << std::endl;
+    }
+
+    sf::IpAddress myIP = sf::IpAddress::getLocalAddress();
+    char data[100] = "hello server. I am a client";
+
+    if (udpSocket.send(data, 100, sf::IpAddress::Broadcast, 55571) != sf::Socket::Done){
+        std::cout << "Could not broadcast" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Sent" << std::endl;
+    }
+
+    
+
+    char serverData[100];
+    size_t received;
+    sf::IpAddress remoteIP;
+    unsigned short remotePort;
+
+    if (udpRecieverSocket.receive(serverData, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+        std::cout << "Failed to recieve" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Recieved: " << serverData << " from broadcast" << std::endl;
+        //return 1;
+    }
+
+    socket.connect(remoteIP, 55561);
+
+    ClientData player;
+    player.c_name = "Fred";
+    player.c_points = 12;
+    player.c_input = 1;
+
     srand(time(NULL));
     sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Bubble");
     window.setFramerateLimit(60);
@@ -165,11 +257,61 @@ int main(int argc, const char* argv[])
             isCannon2Ready = false;
         }
 
+        //Input sending currently not working
+        //Need an array to keep track of the keys pressed in the current frame
+        //Compare this to the last frame
+        //If there is a change, send a message
+        //This will hopefully prevent overlaps and reduce the number of messages sent
+
+        bool inputMade{ false };
+        bool leftDown{ false };
+        bool rightDown{ false };
+
         angle1 = cannon1.getRotation();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1)){
             cannon1.rotate(-1);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle1 > MIN_ANGLE - 1 || angle1 < MAX_ANGLE - 1))
+            //Send pressed
+            player.c_input = 2;
+            leftDown = true;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) == false){
+            //Send release
+            player.c_input = 3;
+            leftDown = false;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle1 > MIN_ANGLE - 1 || angle1 < MAX_ANGLE - 1)){
             cannon1.rotate(1);
+            //Send pressed
+            player.c_input = 4;
+            rightDown = true;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false){
+            //Send release
+            player.c_input = 5;
+            rightDown = false;
+        }
+
+        if (leftDown == true && rightDown == false){
+            sf::Packet p;
+            p << player;
+            if (socket.send(p) != sf::Socket::Done){
+                std::cout << "Failed to send to server" << std::endl;
+                return 1;
+            }
+        }
+        else if (leftDown == false && rightDown == true){
+            sf::Packet p;
+            p << player;
+            if (socket.send(p) != sf::Socket::Done){
+                std::cout << "Failed to send to server" << std::endl;
+                return 1;
+            }
+        }
+        else{
+
+        }
+
         angle2 = cannon2.getRotation();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
             cannon2.rotate(-1);
@@ -195,6 +337,21 @@ int main(int argc, const char* argv[])
             //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
             //isCannon1Ready = false;
             playerOne.m_lastShot = std::chrono::steady_clock::now();
+            player.c_input = 0;
+            inputMade = true;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) == false){
+            player.c_input = 1;
+            inputMade = true;
+        }
+
+        if (inputMade == true){
+            sf::Packet p;
+            p << player;
+            if (socket.send(p) != sf::Socket::Done){
+                std::cout << "Failed to send to server" << std::endl;
+                return 1;
+            }
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && isCannon2Ready)
