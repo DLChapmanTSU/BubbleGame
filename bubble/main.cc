@@ -170,6 +170,17 @@ int main(int argc, const char* argv[])
         }
     }
 
+    for (size_t i = 1; i < 11; i++) {
+        for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
+            //sf::CircleShape bubble(BUBBLE_SIZE);
+            //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+            int points = rand() % 5;
+            //bubble.setFillColor(colours[points]);
+            bubbles.push_back(Ball(sf::Vector2f((BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE) + (WINDOW_W / 2) + BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+        }
+    }
+
+
     sf::RectangleShape cannon1(sf::Vector2f(CANNON_W, CANNON_H));
     cannon1.setOrigin(CANNON_W / 2, CANNON_H);
     sf::Vector2f p1_pos(WINDOW_W / 4, (WINDOW_H));
@@ -364,11 +375,7 @@ int main(int argc, const char* argv[])
             }
         }
 
-        angle2 = cannon2.getRotation();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
-            cannon2.rotate(-1);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
-            cannon2.rotate(1);
+        
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon1Ready)
@@ -429,7 +436,25 @@ int main(int argc, const char* argv[])
         //    }
         //}
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && isCannon2Ready)
+        ClientData otherData;
+        otherData.c_message = "Has not been overwritten";
+        queue.Pop(otherData);
+
+        if (otherData.c_message != "Has not been overwritten"){
+            playerTwo.m_currentInputs[otherData.c_input] = !playerTwo.m_currentInputs[otherData.c_input];
+        }
+        else{
+            std::cout << "No input yet" << std::endl;
+        }
+
+        angle2 = cannon2.getRotation();
+        if (playerTwo.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
+            cannon2.rotate(-1);
+        if (playerTwo.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
+            cannon2.rotate(1);
+
+
+        if (playerTwo.m_currentInputs[2] && isCannon2Ready)
         {
             angle2 = cannon2.getRotation();
             float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
