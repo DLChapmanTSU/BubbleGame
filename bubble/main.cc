@@ -99,12 +99,12 @@ int main(int argc, const char* argv[])
 
     
 
-    char serverData[100];
+    int serverData;
     size_t received;
     sf::IpAddress remoteIP;
     unsigned short remotePort;
 
-    if (udpRecieverSocket.receive(serverData, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+    if (udpRecieverSocket.receive(&serverData, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
         return 1;
     }
