@@ -2,6 +2,7 @@
 #include "Reciever.h"
 //#include "Queue.h"
 #include "List.h"
+#include "ClientData.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
@@ -10,7 +11,7 @@
 #include <thread>
 
 
-Accepter::Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<std::string>& q) : a_socket(s), a_queue(q){ }
+Accepter::Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<ClientData>& q) : a_socket(s), a_queue(q){ }
 
 void Accepter::operator()(){
     std::cout << "Trying To Accept" << std::endl;

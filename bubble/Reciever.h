@@ -5,11 +5,13 @@
 
 #include "Queue.h"
 
+struct ClientData;
+
 class Reciever{
 private:
     std::shared_ptr<sf::TcpSocket> r_socket;
-    Queue<std::string>& r_queue;
+    Queue<ClientData>& r_queue;
 public:
-    Reciever(std::shared_ptr<sf::TcpSocket>& s, Queue<std::string>& q);
+    Reciever(std::shared_ptr<sf::TcpSocket>& s, Queue<ClientData>& q);
     void ReceiverLoop();
 };
