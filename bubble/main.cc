@@ -115,17 +115,11 @@ int main(int argc, const char* argv[])
 
     socket.connect(remoteIP, 55561);
 
-    ClientData player;
-
-    std::cout << "Enter your name:" << std::endl;
-    std::cin >> player.c_name;
-    //player.c_name = "Fred";
-    player.c_points = 12;
-    player.c_input = 1;
-
     srand(serverData);
-    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Bubble");
-    window.setFramerateLimit(60);
+    for (size_t i = 0; i < 5; i++)
+    {
+        std::cout << std::rand() % 5 << std::endl;
+    }
 
     const sf::Color colours[5] = {
         sf::Color::Red,
@@ -135,18 +129,7 @@ int main(int argc, const char* argv[])
         sf::Color(127, 192, 192),
     };
 
-    PlayerData playerOne;
-    PlayerData playerTwo;
-    playerOne.m_lastShot = std::chrono::steady_clock::now();
-    playerTwo.m_lastShot = std::chrono::steady_clock::now();
-    playerOne.m_nextBallIndex = 0;
-    playerTwo.m_nextBallIndex = 1;
-    playerOne.m_currentInputs[0] = false;
-    playerOne.m_currentInputs[1] = false;
-    playerOne.m_currentInputs[2] = false;
-    playerTwo.m_currentInputs[0] = false;
-    playerTwo.m_currentInputs[1] = false;
-    playerTwo.m_currentInputs[2] = false;
+    
 
     std::vector<Ball> bubbles;
     for (size_t i = 0; i < 50; i++) {
@@ -180,6 +163,32 @@ int main(int argc, const char* argv[])
         }
     }
 
+    ClientData player;
+
+    std::cout << "Enter your name:" << std::endl;
+    std::cin >> player.c_name;
+    //player.c_name = "Fred";
+    player.c_points = 12;
+    player.c_input = 1;
+
+    
+    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Bubble");
+    window.setFramerateLimit(60);
+
+    
+
+    PlayerData playerOne;
+    PlayerData playerTwo;
+    playerOne.m_lastShot = std::chrono::steady_clock::now();
+    playerTwo.m_lastShot = std::chrono::steady_clock::now();
+    playerOne.m_nextBallIndex = 0;
+    playerTwo.m_nextBallIndex = 1;
+    playerOne.m_currentInputs[0] = false;
+    playerOne.m_currentInputs[1] = false;
+    playerOne.m_currentInputs[2] = false;
+    playerTwo.m_currentInputs[0] = false;
+    playerTwo.m_currentInputs[1] = false;
+    playerTwo.m_currentInputs[2] = false;
 
     sf::RectangleShape cannon1(sf::Vector2f(CANNON_W, CANNON_H));
     cannon1.setOrigin(CANNON_W / 2, CANNON_H);
