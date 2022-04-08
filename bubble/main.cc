@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
     player.c_points = 12;
     player.c_input = 1;
 
-    srand(time(NULL));
+    srand(serverData);
     sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Bubble");
     window.setFramerateLimit(60);
 
