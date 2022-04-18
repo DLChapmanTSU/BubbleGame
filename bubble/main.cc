@@ -39,7 +39,36 @@ struct PlayerData {
     bool m_currentInputs[3];
 };
 
+//RNG system based on Linear Congruential Generator
+//Has a set start value, multiplier and increment
+//Also tracks the last generated value for use in finding the next value
+class LCG{
+private:
+    int l_mult;
+    int l_increment;
+    int l_seed;
+    int l_current;
+public:
+    LCG(int mult, int i, int s);
+    int GenerateNextValue(int m);
+};
 
+LCG::LCG(int mult, int i, int s){
+    l_mult = mult;
+    l_increment = i;
+    l_seed = s;
+    l_current = s;
+}
+
+//Multiplies and then increments the last value (the seed if this is the first generation)
+//Then finds the remainder from the set mod value to set and return the next value in the sequence
+//The mod is passed in each time to allow us to generate a random value between any given range without having to create a new object each time and thus a new sequence
+int LCG::GenerateNextValue(int m){
+    int modless = (l_mult * l_current) + l_increment;
+    std::cout << "modless = " << modless << std::endl;
+    l_current = modless % m;
+    return l_current;
+}
 
 sf::Packet& operator >>(sf::Packet& packet, ClientData& player)
 {
@@ -116,9 +145,10 @@ int main(int argc, const char* argv[])
     socket.connect(remoteIP, 55561);
 
     srand(serverData);
+    LCG generator(1837497, 12345, serverData);
     for (size_t i = 0; i < 5; i++)
     {
-        std::cout << std::rand() % 5 << std::endl;
+        std::cout << generator.GenerateNextValue(5) << std::endl;
     }
 
     const sf::Color colours[5] = {
