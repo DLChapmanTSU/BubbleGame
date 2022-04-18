@@ -44,16 +44,16 @@ struct PlayerData {
 //Also tracks the last generated value for use in finding the next value
 class LCG{
 private:
-    int l_mult;
-    int l_increment;
-    int l_seed;
-    int l_current;
+    unsigned int l_mult;
+    unsigned int l_increment;
+    unsigned int l_seed;
+    unsigned int l_current;
 public:
-    LCG(int mult, int i, int s);
-    int GenerateNextValue(int m);
+    LCG(unsigned int mult, unsigned int i, unsigned int s);
+    unsigned int GenerateNextValue(unsigned int m);
 };
 
-LCG::LCG(int mult, int i, int s){
+LCG::LCG(unsigned int mult, unsigned int i, unsigned int s){
     l_mult = mult;
     l_increment = i;
     l_seed = s;
@@ -63,11 +63,11 @@ LCG::LCG(int mult, int i, int s){
 //Multiplies and then increments the last value (the seed if this is the first generation)
 //Then finds the remainder from the set mod value to set and return the next value in the sequence
 //The mod is passed in each time to allow us to generate a random value between any given range without having to create a new object each time and thus a new sequence
-int LCG::GenerateNextValue(int m){
-    int modless = (l_mult * l_current) + l_increment;
-    std::cout << "modless = " << modless << std::endl;
-    l_current = modless % m;
-    return l_current;
+unsigned int LCG::GenerateNextValue(unsigned int m){
+    l_current = l_current * l_mult + l_increment;
+    std::cout << "modless = " << l_current << std::endl;
+    //l_current = (modless % 32768);
+    return (l_current % m);
 }
 
 sf::Packet& operator >>(sf::Packet& packet, ClientData& player)
@@ -145,7 +145,7 @@ int main(int argc, const char* argv[])
     socket.connect(remoteIP, 55561);
 
     srand(serverData);
-    LCG generator(1837497, 12345, serverData);
+    LCG generator(110351, 12345, serverData);
     for (size_t i = 0; i < 5; i++)
     {
         std::cout << generator.GenerateNextValue(5) << std::endl;
