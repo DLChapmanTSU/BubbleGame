@@ -163,7 +163,7 @@ int main(int argc, const char* argv[])
 
     std::vector<Ball> bubbles;
     for (size_t i = 0; i < 50; i++) {
-        int points = rand() % 5;
+        int points = generator.GenerateNextValue(5);
         bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
         if (i % 2 == 0){
             bubbles[i].SetIsPlayerOneBall(true);
@@ -177,7 +177,7 @@ int main(int argc, const char* argv[])
         for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
             //sf::CircleShape bubble(BUBBLE_SIZE);
             //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
-            int points = rand() % 5;
+            int points = generator.GenerateNextValue(5);
             //bubble.setFillColor(colours[points]);
             bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
         }
@@ -187,7 +187,7 @@ int main(int argc, const char* argv[])
         for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
             //sf::CircleShape bubble(BUBBLE_SIZE);
             //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
-            int points = rand() % 5;
+            int points = generator.GenerateNextValue(5);
             //bubble.setFillColor(colours[points]);
             bubbles.push_back(Ball(sf::Vector2f((BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE) + (WINDOW_W / 2) + BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
         }
@@ -426,7 +426,7 @@ int main(int argc, const char* argv[])
                 bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
                 //isCannon1Ready = false;
                 playerOne.m_nextBallIndex = FindNextBall(bubbles, true);
-                sf::Color c = colours[std::rand() % 5];
+                sf::Color c = colours[generator.GenerateNextValue(5)];
                 bubbles[playerOne.m_nextBallIndex].SetColor(c);
                 //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
                 //    playerOne.m_nextBallIndex = 0;
@@ -503,7 +503,7 @@ int main(int argc, const char* argv[])
             std::cout << "Player two shot ball number " << playerTwo.m_nextBallIndex << std::endl;
             //isCannon1Ready = false;
             playerTwo.m_nextBallIndex = FindNextBall(bubbles, false);
-            sf::Color c = colours[std::rand() % 5];
+            sf::Color c = colours[generator.GenerateNextValue(5)];
             bubbles[playerTwo.m_nextBallIndex].SetColor(c);
             //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
             //    playerOne.m_nextBallIndex = 0;
