@@ -39,6 +39,21 @@ struct PlayerData {
     bool m_currentInputs[3];
 };
 
+struct ConnectionData{
+    int c_seed;
+    bool c_isPlayerOne;
+};
+
+sf::Packet& operator >>(sf::Packet& packet, ConnectionData& c)
+{
+    return packet >> c.c_seed >> c.c_isPlayerOne;
+}
+
+sf::Packet& operator <<(sf::Packet& packet, const ConnectionData& c)
+{
+    return packet << c.c_seed << c.c_isPlayerOne;
+}
+
 //RNG system based on Linear Congruential Generator
 //Has a set start value, multiplier and increment
 //Also tracks the last generated value for use in finding the next value
@@ -128,24 +143,41 @@ int main(int argc, const char* argv[])
 
     
 
-    int serverData;
+    int mySeed;
+    ConnectionData cd;
     size_t received;
     sf::IpAddress remoteIP;
     unsigned short remotePort;
 
-    if (udpRecieverSocket.receive(&serverData, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+    if (udpRecieverSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
         return 1;
     }
     else{
-        std::cout << "Recieved: " << serverData << " from broadcast" << std::endl;
+        std::cout << "Recieved: seed data from broadcast " << mySeed << std::endl;
         //return 1;
     }
 
+    bool isP1 = true;
+    
+    if (udpRecieverSocket.receive(&isP1, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+        std::cout << "Failed to recieve" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Recieved: side data from broadcast " << isP1 << std::endl;
+        //return 1;
+    }
+
+    //serverData >> mySeed >> isP1;
+
+    std::cout << "Is p1: " << isP1 << std::endl;
+    std::cout << "Seed: " << mySeed << std::endl;
+
     socket.connect(remoteIP, 55561);
 
-    srand(serverData);
-    LCG generator(110351, 12345, serverData);
+    srand(mySeed);
+    LCG generator(110351, 12345, mySeed);
     for (size_t i = 0; i < 5; i++)
     {
         std::cout << generator.GenerateNextValue(5) << std::endl;
@@ -162,36 +194,75 @@ int main(int argc, const char* argv[])
     
 
     std::vector<Ball> bubbles;
-    for (size_t i = 0; i < 50; i++) {
-        int points = generator.GenerateNextValue(5);
-        bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
-        if (i % 2 == 0){
-            bubbles[i].SetIsPlayerOneBall(true);
-        }
-        else{
-            bubbles[i].SetIsPlayerOneBall(false);
-        }
-    }
 
-    for (size_t i = 1; i < 11; i++) {
-        for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
-            //sf::CircleShape bubble(BUBBLE_SIZE);
-            //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+    if (isP1 == true){
+        std::cout << "I am p1" << std::endl;
+        for (size_t i = 0; i < 50; i++) {
             int points = generator.GenerateNextValue(5);
-            //bubble.setFillColor(colours[points]);
-            bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+            bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
+            if (i % 2 == 0){
+                bubbles[i].SetIsPlayerOneBall(true);
+            }
+            else{
+                bubbles[i].SetIsPlayerOneBall(false);
+            }
         }
-    }
 
-    for (size_t i = 1; i < 11; i++) {
-        for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
-            //sf::CircleShape bubble(BUBBLE_SIZE);
-            //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
-            int points = generator.GenerateNextValue(5);
-            //bubble.setFillColor(colours[points]);
-            bubbles.push_back(Ball(sf::Vector2f((BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE) + (WINDOW_W / 2) + BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+        for (size_t i = 1; i < 11; i++) {
+            for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
+                //sf::CircleShape bubble(BUBBLE_SIZE);
+                //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+                int points = generator.GenerateNextValue(5);
+                //bubble.setFillColor(colours[points]);
+                bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+            }
+        }
+
+        for (size_t i = 1; i < 11; i++) {
+            for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
+                //sf::CircleShape bubble(BUBBLE_SIZE);
+                //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+                int points = generator.GenerateNextValue(5);
+                //bubble.setFillColor(colours[points]);
+                bubbles.push_back(Ball(sf::Vector2f((BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE) + (WINDOW_W / 2) + BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+            }
         }
     }
+    else{
+        std::cout << "I am p2" << std::endl;
+        for (size_t i = 0; i < 50; i++) {
+            int points = generator.GenerateNextValue(5);
+            bubbles.push_back(Ball(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 0.0f), colours[points], false, i, false));
+            if (i % 2 == 0){
+                bubbles[i].SetIsPlayerOneBall(false);
+            }
+            else{
+                bubbles[i].SetIsPlayerOneBall(true);
+            }
+        }
+
+        for (size_t i = 1; i < 11; i++) {
+            for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
+                //sf::CircleShape bubble(BUBBLE_SIZE);
+                //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+                int points = generator.GenerateNextValue(5);
+                //bubble.setFillColor(colours[points]);
+                bubbles.push_back(Ball(sf::Vector2f((BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE) + (WINDOW_W / 2) + BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+            }
+        }
+
+        for (size_t i = 1; i < 11; i++) {
+            for (size_t j = 0; j < (WINDOW_W / 2) / 40 - (i % 2); j++) {
+                //sf::CircleShape bubble(BUBBLE_SIZE);
+                //bubble.setPosition(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33));
+                int points = generator.GenerateNextValue(5);
+                //bubble.setFillColor(colours[points]);
+                bubbles.push_back(Ball(sf::Vector2f(BUBBLE_SIZE * 2 * j + (i % 2) * BUBBLE_SIZE, i * 33), sf::Vector2f(0.0f, 0.0f), colours[points], true, (i * j) + 50));
+            }
+        }
+    }
+    
+    
 
     ClientData player;
 
