@@ -328,7 +328,7 @@ int main(int argc, const char* argv[])
     int score1 = 0;
     int score2 = 0;
 
-
+    bool isGameStarted{false};
 
     while (window.isOpen())
     {
@@ -340,289 +340,198 @@ int main(int argc, const char* argv[])
             }
         }
 
-        bubbles[playerOne.m_nextBallIndex].SetIsActive(true);
-        //std::cout << bubbles[playerOne.m_nextBallIndex].GetIsActive() << std::endl;
-        bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
-        bubbles[playerOne.m_nextBallIndex].SetIsInWall(false);
-        bubbles[playerOne.m_nextBallIndex].SetIsPlayerOneBall(true);
+        if (isGameStarted == true){
+            bubbles[playerOne.m_nextBallIndex].SetIsActive(true);
+            //std::cout << bubbles[playerOne.m_nextBallIndex].GetIsActive() << std::endl;
+            bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
+            bubbles[playerOne.m_nextBallIndex].SetIsInWall(false);
+            bubbles[playerOne.m_nextBallIndex].SetIsPlayerOneBall(true);
 
-        bubbles[playerTwo.m_nextBallIndex].SetIsActive(true);
-        bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
-        bubbles[playerTwo.m_nextBallIndex].SetIsInWall(false);
-        bubbles[playerTwo.m_nextBallIndex].SetIsPlayerOneBall(false);
+            bubbles[playerTwo.m_nextBallIndex].SetIsActive(true);
+            bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
+            bubbles[playerTwo.m_nextBallIndex].SetIsInWall(false);
+            bubbles[playerTwo.m_nextBallIndex].SetIsPlayerOneBall(false);
 
-        std::chrono::steady_clock::time_point current = std::chrono::steady_clock::now();
-        float p1Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerOne.m_lastShot).count();
-        float p2Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerTwo.m_lastShot).count();
+            std::chrono::steady_clock::time_point current = std::chrono::steady_clock::now();
+            float p1Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerOne.m_lastShot).count();
+            float p2Diff = std::chrono::duration_cast<std::chrono::milliseconds>(current - playerTwo.m_lastShot).count();
 
-        if (p1Diff >= 200.0f) {
-            isCannon1Ready = true;
-        }
-        else {
-            isCannon1Ready = false;
-        }
+            if (p1Diff >= 200.0f) {
+                isCannon1Ready = true;
+            }
+            else {
+                isCannon1Ready = false;
+            }
 
-        if (p2Diff >= 200.0f) {
-            isCannon2Ready = true;
-        }
-        else {
-            isCannon2Ready = false;
-        }
+            if (p2Diff >= 200.0f) {
+                isCannon2Ready = true;
+            }
+            else {
+                isCannon2Ready = false;
+            }
 
-        //Input sending currently not working
-        //Need an array to keep track of the keys pressed in the current frame
-        //Compare this to the last frame
-        //If there is a change, send a message
-        //This will hopefully prevent overlaps and reduce the number of messages sent
+            //Input sending currently not working
+            //Need an array to keep track of the keys pressed in the current frame
+            //Compare this to the last frame
+            //If there is a change, send a message
+            //This will hopefully prevent overlaps and reduce the number of messages sent
 
-        bool inputMade{ false };
-        bool leftDown{ false };
-        bool rightDown{ false };
+            bool inputMade{ false };
+            bool leftDown{ false };
+            bool rightDown{ false };
 
-        bool leftToggled{ false };
-        bool rightToggled{ false };
-        bool shootToggled{ false };
+            bool leftToggled{ false };
+            bool rightToggled{ false };
+            bool shootToggled{ false };
 
-        if (isP1 == true){
-            angle1 = cannon1.getRotation();
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1)){
-                cannon1.rotate(-1);
-                //Send pressed
-                player.c_input = 2;
-                leftDown = true;
+            if (isP1 == true){
+                angle1 = cannon1.getRotation();
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1)){
+                    cannon1.rotate(-1);
+                    //Send pressed
+                    player.c_input = 2;
+                    leftDown = true;
 
-                if (playerOne.m_currentInputs[0] == false){
-                    playerOne.m_currentInputs[0] = true;
-                    leftToggled = true;
+                    if (playerOne.m_currentInputs[0] == false){
+                        playerOne.m_currentInputs[0] = true;
+                        leftToggled = true;
+                    }
                 }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) == false){
-                //Send release
-                player.c_input = 3;
-                leftDown = false;
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) == false){
+                    //Send release
+                    player.c_input = 3;
+                    leftDown = false;
 
-                if (playerOne.m_currentInputs[0] == true){
-                    playerOne.m_currentInputs[0] = false;
-                    leftToggled = true;
+                    if (playerOne.m_currentInputs[0] == true){
+                        playerOne.m_currentInputs[0] = false;
+                        leftToggled = true;
+                    }
                 }
-            }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle1 > MIN_ANGLE - 1 || angle1 < MAX_ANGLE - 1)){
-                cannon1.rotate(1);
-                //Send pressed
-                player.c_input = 4;
-                rightDown = true;
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle1 > MIN_ANGLE - 1 || angle1 < MAX_ANGLE - 1)){
+                    cannon1.rotate(1);
+                    //Send pressed
+                    player.c_input = 4;
+                    rightDown = true;
 
-                if (playerOne.m_currentInputs[1] == false){
-                    playerOne.m_currentInputs[1] = true;
-                   rightToggled = true;
-               }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false){
-                //Send release
-                player.c_input = 5;
-                rightDown = false;
-
-                if (playerOne.m_currentInputs[1] == true){
-                    playerOne.m_currentInputs[1] = false;
-                    rightToggled = true;
+                    if (playerOne.m_currentInputs[1] == false){
+                        playerOne.m_currentInputs[1] = true;
+                        rightToggled = true;
+                    }
                 }
-            }
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false){
+                    //Send release
+                    player.c_input = 5;
+                    rightDown = false;
 
-            if (rightToggled == true){
-                player.c_input = 0;
-                player.c_message = "Right Toggled";
-                sf::Packet p;
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
+                    if (playerOne.m_currentInputs[1] == true){
+                        playerOne.m_currentInputs[1] = false;
+                        rightToggled = true;
+                    }
                 }
-            }
 
-            if (leftToggled == true){
-                player.c_input = 1;
-                player.c_message = "Left Toggled";
-                sf::Packet p;
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
-                }
-            }
-
-        
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon1Ready)
-                {
-                    angle1 = cannon1.getRotation();
-                    float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-                    float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-                    bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
-                    bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
-                    //isCannon1Ready = false;
-                    playerOne.m_nextBallIndex = FindNextBall(bubbles, true);
-                    sf::Color c = colours[generatorP1.GenerateNextValue(5)];
-                    bubbles[playerOne.m_nextBallIndex].SetColor(c);
-                    //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
-                    //    playerOne.m_nextBallIndex = 0;
-                    //}
-                    //angle1 = cannon1.getRotation();
-                    //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-                    //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-                    //isCannon1Ready = false;
-                    playerOne.m_lastShot = std::chrono::steady_clock::now();
+                if (rightToggled == true){
                     player.c_input = 0;
-                    inputMade = true;
+                    player.c_message = "Right Toggled";
+                    sf::Packet p;
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
                 }
 
-                if (playerOne.m_currentInputs[2] == false){
-                    playerOne.m_currentInputs[2] = true;
-                    shootToggled = true;
+                if (leftToggled == true){
+                    player.c_input = 1;
+                    player.c_message = "Left Toggled";
+                    sf::Packet p;
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
                 }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) == false){
-                player.c_input = 1;
-                inputMade = true;
-
-                if (playerOne.m_currentInputs[2] == true){
-                    playerOne.m_currentInputs[2] = false;
-                    shootToggled = true;
-                }
-            }
-
-            if (shootToggled == true){
-                sf::Packet p;
-                player.c_input = 2;
-                player.c_message = "Shoot Toggled";
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
-                }
-            }
-
-            ClientData otherData;
-            otherData.c_message = "Has not been overwritten";
-            queue.Pop(otherData);
-
-            if (otherData.c_message != "Has not been overwritten"){
-                playerTwo.m_currentInputs[otherData.c_input] = !playerTwo.m_currentInputs[otherData.c_input];
-            }
-            else{
-                std::cout << "No input yet" << std::endl;
-            }
-
-            angle2 = cannon2.getRotation();
-            if (playerTwo.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
-                cannon2.rotate(-1);
-            if (playerTwo.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
-                cannon2.rotate(1);
-
-
-            if (playerTwo.m_currentInputs[2] && isCannon2Ready)
-            {
-                angle2 = cannon2.getRotation();
-                float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
-                float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
-                bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
-                bubbles[playerTwo.m_nextBallIndex].SetVelocity(startX, startY);
-                std::cout << "Player two shot ball number " << playerTwo.m_nextBallIndex << std::endl;
-                //isCannon1Ready = false;
-                playerTwo.m_nextBallIndex = FindNextBall(bubbles, false);
-                sf::Color c = colours[generatorP2.GenerateNextValue(5)];
-                bubbles[playerTwo.m_nextBallIndex].SetColor(c);
-                //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
-                //    playerOne.m_nextBallIndex = 0;
-                //}
-                //angle1 = cannon1.getRotation();
-                //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-                //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-                //isCannon1Ready = false;
-                playerTwo.m_lastShot = std::chrono::steady_clock::now();
-            }
-        }
-        else{
-            angle2 = cannon2.getRotation();
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1)){
-                cannon2.rotate(-1);
-                //Send pressed
-                player.c_input = 2;
-                leftDown = true;
-
-                if (playerTwo.m_currentInputs[0] == false){
-                    playerTwo.m_currentInputs[0] = true;
-                    leftToggled = true;
-                }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) == false){
-                //Send release
-                player.c_input = 3;
-                leftDown = false;
-
-                if (playerTwo.m_currentInputs[0] == true){
-                    playerTwo.m_currentInputs[0] = false;
-                    leftToggled = true;
-                }
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1)){
-                cannon2.rotate(1);
-                //Send pressed
-                player.c_input = 4;
-                rightDown = true;
-
-                if (playerTwo.m_currentInputs[1] == false){
-                    playerTwo.m_currentInputs[1] = true;
-                    rightToggled = true;
-                }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false){
-                //Send release
-                player.c_input = 5;
-                rightDown = false;
-
-                if (playerTwo.m_currentInputs[1] == true){
-                    playerTwo.m_currentInputs[1] = false;
-                    rightToggled = true;
-                }
-            }
-
-            if (rightToggled == true){
-                player.c_input = 0;
-                player.c_message = "Right Toggled";
-                sf::Packet p;
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
-                }
-            }
-
-            if (leftToggled == true){
-                player.c_input = 1;
-                player.c_message = "Left Toggled";
-                sf::Packet p;
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
-                }
-            }
 
         
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon2Ready)
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon1Ready)
+                    {
+                        angle1 = cannon1.getRotation();
+                        float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
+                        bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
+                        //isCannon1Ready = false;
+                        playerOne.m_nextBallIndex = FindNextBall(bubbles, true);
+                        sf::Color c = colours[generatorP1.GenerateNextValue(5)];
+                        bubbles[playerOne.m_nextBallIndex].SetColor(c);
+                        //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
+                        //    playerOne.m_nextBallIndex = 0;
+                        //}
+                        //angle1 = cannon1.getRotation();
+                        //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        //isCannon1Ready = false;
+                        playerOne.m_lastShot = std::chrono::steady_clock::now();
+                        player.c_input = 0;
+                        inputMade = true;
+                    }
+
+                    if (playerOne.m_currentInputs[2] == false){
+                        playerOne.m_currentInputs[2] = true;
+                        shootToggled = true;
+                    }
+                }
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) == false){
+                    player.c_input = 1;
+                    inputMade = true;
+
+                    if (playerOne.m_currentInputs[2] == true){
+                        playerOne.m_currentInputs[2] = false;
+                        shootToggled = true;
+                    }
+                }
+
+                if (shootToggled == true){
+                    sf::Packet p;
+                    player.c_input = 2;
+                    player.c_message = "Shoot Toggled";
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
+                }
+
+                ClientData otherData;
+                otherData.c_message = "Has not been overwritten";
+                queue.Pop(otherData);
+
+                if (otherData.c_message != "Has not been overwritten"){
+                    playerTwo.m_currentInputs[otherData.c_input] = !playerTwo.m_currentInputs[otherData.c_input];
+                }
+                else{
+                    std::cout << "No input yet" << std::endl;
+                }
+
+                angle2 = cannon2.getRotation();
+                if (playerTwo.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
+                    cannon2.rotate(-1);
+                if (playerTwo.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
+                    cannon2.rotate(1);
+
+
+                if (playerTwo.m_currentInputs[2] && isCannon2Ready)
                 {
                     angle2 = cannon2.getRotation();
                     float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
                     float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
                     bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
                     bubbles[playerTwo.m_nextBallIndex].SetVelocity(startX, startY);
+                    std::cout << "Player two shot ball number " << playerTwo.m_nextBallIndex << std::endl;
                     //isCannon1Ready = false;
-                    playerTwo.m_nextBallIndex = FindNextBall(bubbles, true);
+                    playerTwo.m_nextBallIndex = FindNextBall(bubbles, false);
                     sf::Color c = colours[generatorP2.GenerateNextValue(5)];
                     bubbles[playerTwo.m_nextBallIndex].SetColor(c);
                     //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
@@ -633,114 +542,228 @@ int main(int argc, const char* argv[])
                     //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
                     //isCannon1Ready = false;
                     playerTwo.m_lastShot = std::chrono::steady_clock::now();
-                    player.c_input = 0;
-                    inputMade = true;
                 }
-
-                if (playerTwo.m_currentInputs[2] == false){
-                    playerTwo.m_currentInputs[2] = true;
-                    shootToggled = true;
-                }
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) == false){
-                player.c_input = 1;
-                inputMade = true;
-
-                if (playerTwo.m_currentInputs[2] == true){
-                    playerTwo.m_currentInputs[2] = false;
-                    shootToggled = true;
-                }
-            }
-
-            if (shootToggled == true){
-                sf::Packet p;
-                player.c_input = 2;
-                player.c_message = "Shoot Toggled";
-                p << player;
-                if (socket.send(p) != sf::Socket::Done){
-                    std::cout << "Failed to send to server" << std::endl;
-                    return 1;
-                }
-            }
-
-            ClientData otherData;
-            otherData.c_message = "Has not been overwritten";
-            queue.Pop(otherData);
-
-            if (otherData.c_message != "Has not been overwritten"){
-                playerOne.m_currentInputs[otherData.c_input] = !playerOne.m_currentInputs[otherData.c_input];
             }
             else{
-                std::cout << "No input yet" << std::endl;
+                angle2 = cannon2.getRotation();
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1)){
+                    cannon2.rotate(-1);
+                    //Send pressed
+                    player.c_input = 2;
+                    leftDown = true;
+
+                    if (playerTwo.m_currentInputs[0] == false){
+                        playerTwo.m_currentInputs[0] = true;
+                        leftToggled = true;
+                    }
+                }
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) == false){
+                    //Send release
+                    player.c_input = 3;
+                    leftDown = false;
+
+                    if (playerTwo.m_currentInputs[0] == true){
+                        playerTwo.m_currentInputs[0] = false;
+                        leftToggled = true;
+                    }
+                }
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1)){
+                    cannon2.rotate(1);
+                    //Send pressed
+                    player.c_input = 4;
+                    rightDown = true;
+
+                    if (playerTwo.m_currentInputs[1] == false){
+                        playerTwo.m_currentInputs[1] = true;
+                        rightToggled = true;
+                    }
+                }
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) == false){
+                    //Send release
+                    player.c_input = 5;
+                    rightDown = false;
+
+                    if (playerTwo.m_currentInputs[1] == true){
+                        playerTwo.m_currentInputs[1] = false;
+                        rightToggled = true;
+                    }
+                }
+
+                if (rightToggled == true){
+                    player.c_input = 0;
+                    player.c_message = "Right Toggled";
+                    sf::Packet p;
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
+                }
+
+                if (leftToggled == true){
+                    player.c_input = 1;
+                    player.c_message = "Left Toggled";
+                    sf::Packet p;
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
+                }
+
+        
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && isCannon2Ready)
+                    {
+                        angle2 = cannon2.getRotation();
+                        float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
+                        float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
+                        bubbles[playerTwo.m_nextBallIndex].SetPosition(p2_pos.x, p2_pos.y);
+                        bubbles[playerTwo.m_nextBallIndex].SetVelocity(startX, startY);
+                        //isCannon1Ready = false;
+                        playerTwo.m_nextBallIndex = FindNextBall(bubbles, true);
+                        sf::Color c = colours[generatorP2.GenerateNextValue(5)];
+                        bubbles[playerTwo.m_nextBallIndex].SetColor(c);
+                        //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
+                        //    playerOne.m_nextBallIndex = 0;
+                        //}
+                        //angle1 = cannon1.getRotation();
+                        //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+                        //isCannon1Ready = false;
+                        playerTwo.m_lastShot = std::chrono::steady_clock::now();
+                        player.c_input = 0;
+                        inputMade = true;
+                    }
+
+                    if (playerTwo.m_currentInputs[2] == false){
+                        playerTwo.m_currentInputs[2] = true;
+                        shootToggled = true;
+                    }
+                }
+                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) == false){
+                    player.c_input = 1;
+                    inputMade = true;
+
+                    if (playerTwo.m_currentInputs[2] == true){
+                        playerTwo.m_currentInputs[2] = false;
+                        shootToggled = true;
+                    }
+                }
+
+                if (shootToggled == true){
+                    sf::Packet p;
+                    player.c_input = 2;
+                    player.c_message = "Shoot Toggled";
+                    p << player;
+                    if (socket.send(p) != sf::Socket::Done){
+                        std::cout << "Failed to send to server" << std::endl;
+                        return 1;
+                    }
+                }
+
+                ClientData otherData;
+                otherData.c_message = "Has not been overwritten";
+                queue.Pop(otherData);
+
+                if (otherData.c_message != "Has not been overwritten"){
+                    playerOne.m_currentInputs[otherData.c_input] = !playerOne.m_currentInputs[otherData.c_input];
+                }
+                else{
+                    std::cout << "No input yet" << std::endl;
+                }
+
+                angle1 = cannon1.getRotation();
+                if (playerOne.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
+                    cannon1.rotate(-1);
+                if (playerOne.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
+                    cannon1.rotate(1);
+
+
+                if (playerOne.m_currentInputs[2] && isCannon1Ready)
+                {
+                    angle1 = cannon1.getRotation();
+                    float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+                    float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+                    bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
+                    bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
+                    std::cout << "Player two shot ball number " << playerOne.m_nextBallIndex << std::endl;
+                    //isCannon1Ready = false;
+                    playerOne.m_nextBallIndex = FindNextBall(bubbles, false);
+                    sf::Color c = colours[generatorP1.GenerateNextValue(5)];
+                    bubbles[playerOne.m_nextBallIndex].SetColor(c);
+                    //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
+                    //    playerOne.m_nextBallIndex = 0;
+                    //}
+                    //angle1 = cannon1.getRotation();
+                    //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
+                    //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
+                    //isCannon1Ready = false;
+                    playerOne.m_lastShot = std::chrono::steady_clock::now();
+                }
             }
 
-            angle1 = cannon1.getRotation();
-            if (playerOne.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
-                cannon1.rotate(-1);
-            if (playerOne.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
-                cannon1.rotate(1);
+        
 
+            for (size_t i = 0; i < bubbles.size(); i++) {
+                bubbles[i].Update();
+            }
 
-            if (playerOne.m_currentInputs[2] && isCannon1Ready)
+            for (size_t i = 0; i < bubbles.size(); i++)
             {
-                angle1 = cannon1.getRotation();
-                float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-                float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-                bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
-                bubbles[playerOne.m_nextBallIndex].SetVelocity(startX, startY);
-                std::cout << "Player two shot ball number " << playerOne.m_nextBallIndex << std::endl;
-                //isCannon1Ready = false;
-                playerOne.m_nextBallIndex = FindNextBall(bubbles, false);
-                sf::Color c = colours[generatorP1.GenerateNextValue(5)];
-                bubbles[playerOne.m_nextBallIndex].SetColor(c);
-                //if (playerOne.m_nextBallIndex >= playerOneBalls.size()) {
-                //    playerOne.m_nextBallIndex = 0;
-                //}
-                //angle1 = cannon1.getRotation();
-                //dx1 = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
-                //dy1 = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
-                //isCannon1Ready = false;
-                playerOne.m_lastShot = std::chrono::steady_clock::now();
+                if (bubbles[i].GetIsActive() == false) {
+                    continue;
+                }
+
+                if (bubbles[i].GetIsActive() == true && bubbles[i].GetIsInWall() == false) {
+                    bool hit = bubbles[i].CheckCollision(bubbles);
+                    if (hit == true){
+                        if (bubbles[i].GetIsPlayerOneBall() == true){
+                            playerOne.m_points += bubbles[i].WallCombo(bubbles);
+                        }
+                        else{
+                            playerTwo.m_points += bubbles[i].WallCombo(bubbles);
+                        }
+                    }
+                }
+            }
+
+            score.setString(std::to_string(playerOne.m_points) + " " + std::to_string(playerTwo.m_points));
+
+            window.clear();
+            window.draw(cannon1);
+            window.draw(cannon2);
+            window.draw(wall);
+            window.draw(score);
+            //window.draw(ball1);
+            //window.draw(ball2);
+            for (Ball& b : bubbles) {
+                b.Render(window);
+            }
+        }
+        else{
+            ClientData startData;
+            startData.c_message = "Has not been overwritten";
+            queue.Pop(startData);
+
+            if (startData.c_message == "Start"){
+                isGameStarted = true;
+            }
+            else{
+                sf::Text startText;
+                startText.setString("Waiting for opponent");
+                startText.setFont(font);
+                startText.setFillColor(sf::Color::White);
+                startText.setCharacterSize(40);
+                startText.setOrigin(0.5, 0.5);
+                startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
+                window.draw(startText);
             }
         }
 
         
-
-        for (size_t i = 0; i < bubbles.size(); i++) {
-            bubbles[i].Update();
-        }
-
-        for (size_t i = 0; i < bubbles.size(); i++)
-        {
-            if (bubbles[i].GetIsActive() == false) {
-                continue;
-            }
-
-            if (bubbles[i].GetIsActive() == true && bubbles[i].GetIsInWall() == false) {
-                bool hit = bubbles[i].CheckCollision(bubbles);
-                if (hit == true){
-                    if (bubbles[i].GetIsPlayerOneBall() == true){
-                        playerOne.m_points += bubbles[i].WallCombo(bubbles);
-                    }
-                    else{
-                        playerTwo.m_points += bubbles[i].WallCombo(bubbles);
-                    }
-                }
-            }
-        }
-
-        score.setString(std::to_string(playerOne.m_points) + " " + std::to_string(playerTwo.m_points));
-
-        window.clear();
-        window.draw(cannon1);
-        window.draw(cannon2);
-        window.draw(wall);
-        window.draw(score);
-        //window.draw(ball1);
-        //window.draw(ball2);
-        for (Ball& b : bubbles) {
-            b.Render(window);
-        }
 
         //for (size_t i = 0; i < playerOneBalls.size(); i++) {
         //    playerOneBalls[i].Render(window);
