@@ -148,6 +148,7 @@ int main(int argc, const char* argv[])
     else{
         std::cout << "Sent" << std::endl;
     }
+    sf::Clock latencyClock;
 
     
 
@@ -156,7 +157,7 @@ int main(int argc, const char* argv[])
     size_t received;
     sf::IpAddress remoteIP;
     unsigned short remotePort;
-    
+    sf::Time latency;
 
     if (udpRecieverSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
@@ -164,8 +165,10 @@ int main(int argc, const char* argv[])
     }
     else{
         std::cout << "Recieved: seed data from broadcast " << mySeed << std::endl;
-        //return 1;
+        latency = latencyClock.getElapsedTime();
     }
+
+    std::cout << "Input delay: " << latency.asMilliseconds() << "ms" << std::endl;
 
     LCG generatorP1(110351, 12345, mySeed);
 
