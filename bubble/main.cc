@@ -111,6 +111,14 @@ int main(int argc, const char* argv[])
     
     //c.getLocalBounds();
 
+    ClientData player;
+
+    std::cout << "Enter your name:" << std::endl;
+    std::cin >> player.c_name;
+    //player.c_name = "Fred";
+    player.c_points = 12;
+    player.c_input = 1;
+
     sf::UdpSocket udpSocket;
     sf::UdpSocket udpRecieverSocket;
 
@@ -249,13 +257,7 @@ int main(int argc, const char* argv[])
         }
     }
 
-    ClientData player;
-
-    std::cout << "Enter your name:" << std::endl;
-    std::cin >> player.c_name;
-    //player.c_name = "Fred";
-    player.c_points = 12;
-    player.c_input = 1;
+    
 
     
     sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Bubble");
