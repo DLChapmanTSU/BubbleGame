@@ -168,7 +168,11 @@ int main(int argc, const char* argv[])
         latency = latencyClock.getElapsedTime();
     }
 
-    std::cout << "Input delay: " << latency.asMilliseconds() << "ms" << std::endl;
+    int mil = latency.asMilliseconds();
+    if (mil < 0){
+        mil = 0;
+    }
+    std::cout << "Input delay: " << mil << "ms" << std::endl;
 
     LCG generatorP1(110351, 12345, mySeed);
 
@@ -335,6 +339,9 @@ int main(int argc, const char* argv[])
 
     bool isGameStarted{false};
 
+    sf::Clock tickClock;
+    sf::Time tickTime;
+
     while (window.isOpen())
     {
         sf::Event e;
@@ -346,6 +353,13 @@ int main(int argc, const char* argv[])
         }
 
         if (isGameStarted == true){
+            tickTime = tickClock.getElapsedTime();
+            if (tickTime.asMilliseconds() < 8){
+                continue;
+            }
+            else{
+                tickClock.restart();
+            }
             bubbles[playerOne.m_nextBallIndex].SetIsActive(true);
             //std::cout << bubbles[playerOne.m_nextBallIndex].GetIsActive() << std::endl;
             bubbles[playerOne.m_nextBallIndex].SetPosition(p1_pos.x, p1_pos.y);
@@ -681,9 +695,9 @@ int main(int argc, const char* argv[])
                 }
 
                 angle1 = cannon1.getRotation();
-                if (playerOne.m_currentInputs[1] && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1))
+                if (playerOne.m_currentInputs[1] && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1))
                     cannon1.rotate(-1);
-                if (playerOne.m_currentInputs[0] && (angle2 > MIN_ANGLE - 1 || angle2 < MAX_ANGLE - 1))
+                if (playerOne.m_currentInputs[0] && (angle1 > MIN_ANGLE - 1 || angle1 < MAX_ANGLE - 1))
                     cannon1.rotate(1);
 
 
