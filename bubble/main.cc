@@ -378,7 +378,7 @@ int main(int argc, const char* argv[])
 
         if (isGameStarted == true && playerOne.m_points < 250 && playerTwo.m_points < 250){
             tickTime = tickClock.getElapsedTime();
-            if (tickTime.asMilliseconds() < 100){
+            if (tickTime.asMilliseconds() < 10){
                 continue;
             }
             else{
@@ -816,19 +816,39 @@ int main(int argc, const char* argv[])
 
         if (playerOne.m_points >= 250 && playerTwo.m_points < 250){
             //p1 win
-            window.draw(p1WinText);
+            if (isP1 == true){
+                window.draw(p1WinText);
+            }
+            else{
+                window.draw(p2WinText);
+            }
         }
         else if (playerOne.m_points < 250 && playerTwo.m_points >= 250){
             //p2 win
-            window.draw(p2WinText);
+            if (isP1 == true){
+                window.draw(p2WinText);
+            }
+            else{
+                window.draw(p1WinText);
+            }
         }
         else if (playerOne.m_points >= 250 && playerTwo.m_points >= 250){
             //draw
             if (playerOne.m_points > playerTwo.m_points){
-                window.draw(p1WinText);
+                if (isP1 == true){
+                    window.draw(p1WinText);
+                }
+                else{
+                    window.draw(p2WinText);
+                }
             }
             else if (playerTwo.m_points > playerOne.m_points){
-                window.draw(p2WinText);
+                if (isP1 == true){
+                    window.draw(p2WinText);
+                }
+                else{
+                    window.draw(p1WinText);
+                }
             }
             else{
                 window.draw(drawText);
