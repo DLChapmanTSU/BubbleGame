@@ -44,5 +44,7 @@ void Accepter::operator()(){
         }
     }
 
+    listener.close();
+
     std::cout << "Done" << std::endl;
 }

@@ -49,4 +49,6 @@ void Reciever::ReceiverLoop(){
 
         r_queue.Push(d);
     }
+
+    r_socket->disconnect();
 }

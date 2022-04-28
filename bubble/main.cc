@@ -342,6 +342,30 @@ int main(int argc, const char* argv[])
     sf::Clock tickClock;
     sf::Time tickTime;
 
+    sf::Text p1WinText;
+    p1WinText.setString(player.c_name + " wins!");
+    p1WinText.setFont(font);
+    p1WinText.setFillColor(sf::Color::White);
+    p1WinText.setCharacterSize(40);
+    p1WinText.setOrigin(0.5, 0.5);
+    p1WinText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
+
+    sf::Text p2WinText;
+    p2WinText.setString("You Lose");
+    p2WinText.setFont(font);
+    p2WinText.setFillColor(sf::Color::White);
+    p2WinText.setCharacterSize(40);
+    p2WinText.setOrigin(0.5, 0.5);
+    p2WinText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
+
+    sf::Text drawText;
+    drawText.setString("Draw");
+    drawText.setFont(font);
+    drawText.setFillColor(sf::Color::White);
+    drawText.setCharacterSize(40);
+    drawText.setOrigin(0.5, 0.5);
+    drawText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
+
     while (window.isOpen())
     {
         sf::Event e;
@@ -352,9 +376,9 @@ int main(int argc, const char* argv[])
             }
         }
 
-        if (isGameStarted == true){
+        if (isGameStarted == true && score1 < 250 && score2 < 250){
             tickTime = tickClock.getElapsedTime();
-            if (tickTime.asMilliseconds() < 8){
+            if (tickTime.asMilliseconds() < 100){
                 continue;
             }
             else{
@@ -779,6 +803,27 @@ int main(int argc, const char* argv[])
                 startText.setOrigin(0.5, 0.5);
                 startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
                 window.draw(startText);
+            }
+        }
+
+        if (score1 >= 250 && score2 < 250){
+            //p1 win
+            window.draw(p1WinText);
+        }
+        else if (score1 < 250 && score2 >= 250){
+            //p2 win
+            window.draw(p2WinText);
+        }
+        else if (score1 >= 250 && score2 >= 250){
+            //draw
+            if (score1 > score2){
+                window.draw(p1WinText);
+            }
+            else if (score2 > score1){
+                window.draw(p2WinText);
+            }
+            else{
+                window.draw(drawText);
             }
         }
 
