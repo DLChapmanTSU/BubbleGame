@@ -5,4 +5,5 @@ struct ClientData{
     int c_points;
     u_int8_t c_input;
     std::string c_message;
+    float c_rotation;
 };

@@ -20,6 +20,7 @@ void Reciever::ReceiverLoop(){
     int points;
     u_int8_t input;
     std::string message;
+    float rotation;
 
     while (true){
         std::memset(buffer, 0, 256);
@@ -33,8 +34,8 @@ void Reciever::ReceiverLoop(){
             std::cout << "Reciever Loop Recieved " << buffer << std::endl;
         }
 
-        if (packet >> name >> points >> input >> message){
-            std::cout << "Reciever Loop Recieved:\n" << name << "\n" << points << "\n" << input << "\n" << message << std::endl;
+        if (packet >> name >> points >> input >> message >> rotation){
+            std::cout << "Reciever Loop Recieved:\n" << name << "\n" << points << "\n" << input << "\n" << message << "\n" << rotation << std::endl;
         }
 
         ClientData d;
@@ -42,6 +43,7 @@ void Reciever::ReceiverLoop(){
         d.c_points = points;
         d.c_input = input;
         d.c_message = message;
+        d.c_rotation = rotation;
 
         //std::pair<ClientData, bool> p;
         //p.first = d;

@@ -87,12 +87,12 @@ unsigned int LCG::GenerateNextValue(unsigned int m){
 
 sf::Packet& operator >>(sf::Packet& packet, ClientData& player)
 {
-    return packet >> player.c_name >> player.c_points >> player.c_input >> player.c_message;
+    return packet >> player.c_name >> player.c_points >> player.c_input >> player.c_message >> player.c_rotation;
 }
 
 sf::Packet& operator <<(sf::Packet& packet, ClientData& player)
 {
-    return packet << player.c_name << player.c_points << player.c_input << player.c_message;
+    return packet << player.c_name << player.c_points << player.c_input << player.c_message << player.c_rotation;
 }
 
 size_t FindNextBall(std::vector<Ball>& b, bool p);
@@ -376,7 +376,7 @@ int main(int argc, const char* argv[])
             }
         }
 
-        if (isGameStarted == true && score1 < 250 && score2 < 250){
+        if (isGameStarted == true && playerOne.m_points < 250 && playerTwo.m_points < 250){
             tickTime = tickClock.getElapsedTime();
             if (tickTime.asMilliseconds() < 100){
                 continue;
@@ -429,6 +429,7 @@ int main(int argc, const char* argv[])
 
             if (isP1 == true){
                 angle1 = cannon1.getRotation();
+                //player.c_rotation = angle1;
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle1 > MIN_ANGLE + 1 || angle1 < MAX_ANGLE + 1)){
                     cannon1.rotate(-1);
                     //Send pressed
@@ -472,6 +473,8 @@ int main(int argc, const char* argv[])
                         rightToggled = true;
                     }
                 }
+
+                player.c_rotation = cannon1.getRotation();
 
                 if (rightToggled == true){
                     player.c_input = 0;
@@ -567,6 +570,7 @@ int main(int argc, const char* argv[])
 
                 if (playerTwo.m_currentInputs[2] && isCannon2Ready)
                 {
+                    cannon2.setRotation(otherData.c_rotation);
                     angle2 = cannon2.getRotation();
                     float startX = -cos((angle2 + 90) * M_PI / 180) * VELOCITY;
                     float startY = -sin((angle2 + 90) * M_PI / 180) * VELOCITY;
@@ -589,6 +593,7 @@ int main(int argc, const char* argv[])
             }
             else{
                 angle2 = cannon2.getRotation();
+                //player.c_rotation = angle2;
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && (angle2 > MIN_ANGLE + 1 || angle2 < MAX_ANGLE + 1)){
                     cannon2.rotate(-1);
                     //Send pressed
@@ -632,6 +637,8 @@ int main(int argc, const char* argv[])
                         rightToggled = true;
                     }
                 }
+
+                player.c_rotation = cannon2.getRotation();
 
                 if (rightToggled == true){
                     player.c_input = 0;
@@ -727,6 +734,7 @@ int main(int argc, const char* argv[])
 
                 if (playerOne.m_currentInputs[2] && isCannon1Ready)
                 {
+                    cannon1.setRotation(otherData.c_rotation);
                     angle1 = cannon1.getRotation();
                     float startX = -cos((angle1 + 90) * M_PI / 180) * VELOCITY;
                     float startY = -sin((angle1 + 90) * M_PI / 180) * VELOCITY;
@@ -786,7 +794,7 @@ int main(int argc, const char* argv[])
                 b.Render(window);
             }
         }
-        else{
+        else if (isGameStarted == false){
             ClientData startData;
             startData.c_message = "Has not been overwritten";
             queue.Pop(startData);
@@ -806,20 +814,20 @@ int main(int argc, const char* argv[])
             }
         }
 
-        if (score1 >= 250 && score2 < 250){
+        if (playerOne.m_points >= 250 && playerTwo.m_points < 250){
             //p1 win
             window.draw(p1WinText);
         }
-        else if (score1 < 250 && score2 >= 250){
+        else if (playerOne.m_points < 250 && playerTwo.m_points >= 250){
             //p2 win
             window.draw(p2WinText);
         }
-        else if (score1 >= 250 && score2 >= 250){
+        else if (playerOne.m_points >= 250 && playerTwo.m_points >= 250){
             //draw
-            if (score1 > score2){
+            if (playerOne.m_points > playerTwo.m_points){
                 window.draw(p1WinText);
             }
-            else if (score2 > score1){
+            else if (playerTwo.m_points > playerOne.m_points){
                 window.draw(p2WinText);
             }
             else{
