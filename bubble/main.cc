@@ -812,6 +812,7 @@ int main(int argc, const char* argv[])
             }
             
             if (lobbyStarted == true){
+                window.clear();
                 sf::Text startText;
                 
                 startText.setFont(font);
