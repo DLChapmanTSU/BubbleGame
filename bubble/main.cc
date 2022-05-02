@@ -805,16 +805,29 @@ int main(int argc, const char* argv[])
             if (startData.c_message == "Lobby Full"){
                 lobbyStarted = true;
             }
+            else if (lobbyStarted == true && startData.c_message == "Start"){
+                isGameStarted = true;
+                lobbyStarted = false;
+                std::cout << "Starting Game" << std::endl;
+            }
             
             if (lobbyStarted == true){
                 sf::Text startText;
-                startText.setString("Waiting for opponent");
+                
                 startText.setFont(font);
                 startText.setFillColor(sf::Color::White);
-                startText.setCharacterSize(40);
+                startText.setCharacterSize(18);
                 startText.setOrigin(0.5, 0.5);
                 startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
-                window.draw(startText);
+
+                if (isReady == true){
+                    startText.setString("Waiting for opponent");
+                    window.draw(startText);
+                }
+                else{
+                    startText.setString("Press 'Enter' to ready up");
+                    window.draw(startText);
+                }
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) == true && isReady == false && lobbyStarted == true){
                     isReady = true;
@@ -837,6 +850,8 @@ int main(int argc, const char* argv[])
             else{
                 window.draw(p2WinText);
             }
+
+            isGameStarted = false;
         }
         else if (playerOne.m_points < 250 && playerTwo.m_points >= 250){
             //p2 win
@@ -846,6 +861,8 @@ int main(int argc, const char* argv[])
             else{
                 window.draw(p1WinText);
             }
+
+            isGameStarted = false;
         }
         else if (playerOne.m_points >= 250 && playerTwo.m_points >= 250){
             //draw
@@ -868,6 +885,8 @@ int main(int argc, const char* argv[])
             else{
                 window.draw(drawText);
             }
+
+            isGameStarted = false;
         }
 
         
