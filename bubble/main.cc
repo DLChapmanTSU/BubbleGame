@@ -337,7 +337,8 @@ int main(int argc, const char* argv[])
     int score1 = 0;
     int score2 = 0;
 
-    bool isGameStarted{false};
+    bool isGameStarted{ false };
+    bool isReady{ false };
 
     sf::Clock tickClock;
     sf::Time tickTime;
@@ -811,6 +812,17 @@ int main(int argc, const char* argv[])
                 startText.setOrigin(0.5, 0.5);
                 startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
                 window.draw(startText);
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) == true && isReady == false){
+                    isReady = true;
+                    startData.c_message = "Ready";
+                    startData.c_name = player.c_name;
+                    sf::Packet readyPacket;
+                    readyPacket << startData;
+                    if (socket.send(readyPacket) != sf::Socket::Done){
+                        std::cout << "Failed to send ready data" << std::endl;
+                    }
+                }
             }
         }
 
