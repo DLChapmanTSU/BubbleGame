@@ -367,6 +367,8 @@ int main(int argc, const char* argv[])
     drawText.setOrigin(0.5, 0.5);
     drawText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
 
+    bool lobbyStarted{ false };
+
     while (window.isOpen())
     {
         sf::Event e;
@@ -800,10 +802,11 @@ int main(int argc, const char* argv[])
             startData.c_message = "Has not been overwritten";
             queue.Pop(startData);
 
-            if (startData.c_message == "Start"){
-                isGameStarted = true;
+            if (startData.c_message == "Lobby Full"){
+                lobbyStarted = true;
             }
-            else{
+            
+            if (lobbyStarted == true){
                 sf::Text startText;
                 startText.setString("Waiting for opponent");
                 startText.setFont(font);
@@ -813,7 +816,7 @@ int main(int argc, const char* argv[])
                 startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
                 window.draw(startText);
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) == true && isReady == false){
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) == true && isReady == false && lobbyStarted == true){
                     isReady = true;
                     startData.c_message = "Ready";
                     startData.c_name = player.c_name;
