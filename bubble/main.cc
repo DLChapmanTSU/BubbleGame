@@ -102,9 +102,7 @@ int main(int argc, const char* argv[])
     std::cout << "I am a client" << std::endl;
     sf::TcpSocket socket;
     //socket.connect("152.105.67.137", 55561);
-    Queue<ClientData> queue;
-    List<std::shared_ptr<sf::TcpSocket>> sockets;
-    std::thread(Accepter(sockets, queue)).detach();
+    
     //std::thread(Accepter(sockets, queue)).detach();
     //Setup a listener
     //sf::CircleShape c(4);
@@ -119,29 +117,58 @@ int main(int argc, const char* argv[])
     player.c_points = 12;
     player.c_input = 1;
 
+    sf::TcpListener dummyListener;
+    unsigned short freePort = 55562;
+    bool portFound = false;
+
+    while (freePort < 55700 && portFound == false){
+        if (dummyListener.listen(freePort) != sf::Socket::Done){
+            freePort++;
+        }
+        else{
+            portFound = true;
+        }
+    }
+
+    dummyListener.close();
+
+    if (portFound == false){
+        std::cout << "Cannot find free port for listener. Aborting" << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Found free port at: " << freePort << std::endl;
+    }
+
+    Queue<ClientData> queue;
+    List<std::shared_ptr<sf::TcpSocket>> sockets;
+    // std::thread(Accepter(sockets, queue, freePort)).detach();
+
+
     sf::UdpSocket udpSocket;
-    sf::UdpSocket udpRecieverSocket;
+    // sf::UdpSocket udpRecieverSocket;
 
-    if (udpRecieverSocket.bind(55572) != sf::Socket::Done){
-        std::cout << "Failed to bind UDP Socket" << std::endl;
-        return 1;
-    }
-    else{
-        std::cout << "Listener Bound" << std::endl;
-    }
+    // if (udpRecieverSocket.bind(55572) != sf::Socket::Done){
+    //     std::cout << "Failed to bind UDP Socket" << std::endl;
+    //     return 1;
+    // }
+    // else{
+    //     std::cout << "Listener Bound" << std::endl;
+    // }
 
-    if (udpSocket.bind(55570) != sf::Socket::Done){
-        std::cout << "Failed to bind UDP Socket" << std::endl;
-        return 1;
-    }
-    else{
-        std::cout << "Bound" << std::endl;
-    }
+    // if (udpSocket.bind(55570) != sf::Socket::Done){
+    //     std::cout << "Failed to bind UDP Socket" << std::endl;
+    //     return 1;
+    // }
+    // else{
+    //     std::cout << "Bound" << std::endl;
+    // }
 
     sf::IpAddress myIP = sf::IpAddress::getLocalAddress();
     char data[100] = "hello server. I am a client";
 
-    if (udpSocket.send(data, 100, sf::IpAddress::Broadcast, 55571) != sf::Socket::Done){
+    //Sends out a udp broadcast to find a server
+    if (udpSocket.send(&freePort, 100, sf::IpAddress::Broadcast, 55571) != sf::Socket::Done){
         std::cout << "Could not broadcast" << std::endl;
         return 1;
     }
@@ -159,11 +186,18 @@ int main(int argc, const char* argv[])
     unsigned short remotePort;
     sf::Time latency;
 
-    if (udpRecieverSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+    while (latencyClock.getElapsedTime().asMilliseconds() > 100);
+
+    //Awaits a response from the server and calculate the latency based on the time taken to recieve a message back from the server
+    //Assumes a server is already running
+    //UDP reciever also gives us access to the IP of the remote server
+    //Also recieves the seed for the first rng
+    if (udpSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
         return 1;
     }
     else{
+        // packet containds seed1 seed2 and isP1
         std::cout << "Recieved: seed data from broadcast " << mySeed << std::endl;
         latency = latencyClock.getElapsedTime();
     }
@@ -176,7 +210,8 @@ int main(int argc, const char* argv[])
 
     LCG generatorP1(110351, 12345, mySeed);
 
-    if (udpRecieverSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+    //Recieves the second rng seed // TODO: Packet
+    if (udpSocket.receive(&mySeed, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
         return 1;
     }
@@ -189,7 +224,8 @@ int main(int argc, const char* argv[])
 
     bool isP1 = true;
     
-    if (udpRecieverSocket.receive(&isP1, 100, received, remoteIP, remotePort) != sf::Socket::Done){
+    //Recieves data to figure out if the client is player 1 or 2
+    if (udpSocket.receive(&isP1, 100, received, remoteIP, remotePort) != sf::Socket::Done){
         std::cout << "Failed to recieve" << std::endl;
         return 1;
     }
@@ -203,7 +239,11 @@ int main(int argc, const char* argv[])
     std::cout << "Is p1: " << isP1 << std::endl;
     std::cout << "Seed: " << mySeed << std::endl;
 
+    
+
     socket.connect(remoteIP, 55561);
+
+    // TODO: start receive Thread
 
     //srand(mySeed);
     
@@ -231,6 +271,7 @@ int main(int argc, const char* argv[])
         std::cout << "I am p2" << std::endl;
     }
     
+    //Spawns all of the balls. The hidden ones are used as ammo for the player. The rest go in the wall
     for (size_t i = 0; i < 50; i++) {
         if (i % 2 == 0){
             int points = generatorP1.GenerateNextValue(5);
@@ -271,7 +312,7 @@ int main(int argc, const char* argv[])
     window.setFramerateLimit(60);
 
     
-
+    //Setting initial input values
     PlayerData playerOne;
     PlayerData playerTwo;
     playerOne.m_lastShot = std::chrono::steady_clock::now();
@@ -346,7 +387,7 @@ int main(int argc, const char* argv[])
     sf::Text p1WinText;
     p1WinText.setString(player.c_name + " wins!");
     p1WinText.setFont(font);
-    p1WinText.setFillColor(sf::Color::White);
+    p1WinText.setColor(sf::Color::White);
     p1WinText.setCharacterSize(40);
     p1WinText.setOrigin(0.5, 0.5);
     p1WinText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
@@ -354,7 +395,7 @@ int main(int argc, const char* argv[])
     sf::Text p2WinText;
     p2WinText.setString("You Lose");
     p2WinText.setFont(font);
-    p2WinText.setFillColor(sf::Color::White);
+    p2WinText.setColor(sf::Color::White);
     p2WinText.setCharacterSize(40);
     p2WinText.setOrigin(0.5, 0.5);
     p2WinText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
@@ -362,13 +403,14 @@ int main(int argc, const char* argv[])
     sf::Text drawText;
     drawText.setString("Draw");
     drawText.setFont(font);
-    drawText.setFillColor(sf::Color::White);
+    drawText.setColor(sf::Color::White);
     drawText.setCharacterSize(40);
     drawText.setOrigin(0.5, 0.5);
     drawText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
 
     bool lobbyStarted{ false };
 
+    //Game loop
     while (window.isOpen())
     {
         sf::Event e;
@@ -379,6 +421,7 @@ int main(int argc, const char* argv[])
             }
         }
 
+        //Game logic
         if (isGameStarted == true && playerOne.m_points < 250 && playerTwo.m_points < 250){
             tickTime = tickClock.getElapsedTime();
             if (tickTime.asMilliseconds() < 10){
@@ -816,7 +859,7 @@ int main(int argc, const char* argv[])
                 sf::Text startText;
                 
                 startText.setFont(font);
-                startText.setFillColor(sf::Color::White);
+                startText.setColor(sf::Color::White);
                 startText.setCharacterSize(18);
                 startText.setOrigin(0.5, 0.5);
                 startText.setPosition(WINDOW_W / 2, WINDOW_H / 2);
@@ -830,7 +873,7 @@ int main(int argc, const char* argv[])
                     window.draw(startText);
                 }
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) == true && isReady == false && lobbyStarted == true){
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) == true && isReady == false && lobbyStarted == true){
                     isReady = true;
                     startData.c_message = "Ready";
                     startData.c_name = player.c_name;

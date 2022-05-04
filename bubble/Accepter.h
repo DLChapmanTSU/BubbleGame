@@ -13,8 +13,9 @@ class Accepter{
 private:
     List<std::shared_ptr<sf::TcpSocket>>& a_socket;
     Queue<ClientData>& a_queue;
+    unsigned short a_port;
 public:
-    Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<ClientData>& q);
+    Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<ClientData>& q, unsigned short& p);
     void operator()();
     //void AcceptLoop();
 };

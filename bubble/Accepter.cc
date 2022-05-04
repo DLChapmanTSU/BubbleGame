@@ -11,12 +11,12 @@
 #include <thread>
 
 
-Accepter::Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<ClientData>& q) : a_socket(s), a_queue(q){ }
+Accepter::Accepter(List<std::shared_ptr<sf::TcpSocket>>& s, Queue<ClientData>& q, unsigned short& p) : a_socket(s), a_queue(q), a_port(p){ }
 
 void Accepter::operator()(){
     std::cout << "Trying To Accept" << std::endl;
     sf::TcpListener listener;
-    if (listener.listen(55562) != sf::Socket::Done){
+    if (listener.listen(a_port) != sf::Socket::Done){
         std::cout << "FATAL ACCEPTER ERROR" << std::endl;
         return;
     }
